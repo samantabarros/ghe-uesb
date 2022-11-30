@@ -1,10 +1,51 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div id="app">
+    <base-spinner/>
+    <layout-notification/>
+
+    <div class="container-fluid" v-if="isLogged">
+      <div class="row">
+        <div class="col-2 navigation-sidebar">
+          <h1 class="app-title">GHE UESB</h1>
+          <layout-navigation/>
+        </div>
+        <div class="col">
+          <router-view/>
+        </div>
+      </div>
+    </div>
+
+    <router-view v-else/>
+  </div>
 </template>
+
+<script>
+  import BaseSpinner from './components/global/BaseSpinner.vue'
+  import LayoutNavigation from './components/layout/LayoutNavigation'
+  import LayoutNotification from './components/layout/LayoutNotification'
+
+  export default {
+    name: 'App',
+    components: {
+      BaseSpinner,
+      LayoutNavigation,
+      LayoutNotification
+    },
+      data: () => ({ isLogged: false }),
+  mounted () {
+    this.$firebase.auth().onAuthStateChanged(user => {
+      window.uid = user ? user.uid : null
+      this.isLogged = !!user
+
+      this.$router.push({ name: window.uid ? 'home-vue' : 'login-vue' })
+
+      setTimeout(() => {
+        this.$root.$emit('Spinner::hide')
+      }, 300)
+    })
+  }
+}
+</script>
 
 <style lang="scss">
 #app {
@@ -15,15 +56,19 @@
   color: #2c3e50;
 }
 
-nav {
-  padding: 30px;
+</style>
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+<style lang="scss">
+#app {
+  min-height: 100vh;
+  color: var(--light);
+  background-color: var(--darker);
+  .navigation-sidebar {
+    background-color: var(--dark-medium);
+    .app-title {
+      font-size: 20pt;
+      margin-top: 10px;
+      text-align: center;
     }
   }
 }
